@@ -2,7 +2,7 @@
 FROM quay.io/uninuvola/base:main
 
 # --- Environment Variables ---
-ENV MG5_VERSION=3.5.3
+ENV MG5_VERSION=3.5.7
 ENV PYTHIA8_VERSION=8.309
 ENV LHAPDF_VERSION=6.5.1
 ENV MADANALYSIS_VERSION=1.9
@@ -59,7 +59,7 @@ ENV PYTHONPATH=$ROOTSYS/lib:$PYTHONPATH
 
 # Download and extract MG5_aMC
 RUN cd /opt && \
-    wget https://launchpad.net/mg5amcnlo/3.0/${MG5_VERSION}.x/+download/MG5_aMC_v${MG5_VERSION}.tar.gz && \
+    wget https://launchpad.net/mg5amcnlo/lts/lts.3.5.x/+download/MG5_aMC_v${MG5_VERSION}.tar.gz && \
     tar -xzf MG5_aMC_v${MG5_VERSION}.tar.gz && \
     rm MG5_aMC_v${MG5_VERSION}.tar.gz && \
     mv MG5_aMC_v${MG5_VERSION} MG5 && \
