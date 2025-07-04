@@ -1,41 +1,58 @@
 FROM quay.io/uninuvola/base:main
 
-# DO NOT EDIT USER VALUE
+ENV MG5_VERSION=3.5.3
+ENV PYTHIA8_VERSION=8.309
+ENV LHAPDF_VERSION=6.5.1
+ENV MADANALYSIS_VERSION=1.9
+ENV DELPHES_VERSION=3.5.0
+
 USER root
 
-## -- ADD YOUR CODE HERE !! -- ##
+# Downgrade to Python 3.10 to avoid MG5_aMC compatibility issues
+RUN apt update && \
+    apt install -y software-properties-common wget curl build-essential git cmake \
+    python3.10 python3.10-dev python3-pip && \
+    ln -sf /usr/bin/python3.10 /usr/bin/python3 && \
+    ln -sf /usr/bin/pip3 /usr/bin/pip
 
+# Install ROOT dependencies
+RUN apt install -y dpkg-dev cmake g++ gcc binutils libx11-dev libxpm-dev \
+    libxft-dev libxext-dev python3-dev libssl-dev libffi-dev
 
-# 1) System dependencies
-RUN apt-get update && apt-get install -y \
-      gfortran g++ wget make tar \
-      zlib1g-dev libpng-dev libx11-dev libxpm-dev libxft-dev libxext-dev \
-      python3-pip git curl \
-    && rm -rf /var/lib/apt/lists/*
-
-# 2) Download & unpack MG5_aMC LTS‑3.5.7
+# Install ROOT
 WORKDIR /opt
-ENV MG5_VERSION=3.5.7
-RUN wget https://launchpad.net/mg5amcnlo/lts/lts.3.5.x/+download/MG5_aMC_v${MG5_VERSION}.tar.gz && \
+RUN wget https://root.cern/download/root_v6.28.12.source.tar.gz && \
+    tar -xzf root_v6.28.12.source.tar.gz && \
+    rm root_v6.28.12.source.tar.gz && \
+    mkdir root_build && cd root_build && \
+    cmake ../root-6.28.12 -DCMAKE_INSTALL_PREFIX=/opt/root && \
+    cmake --build . --target install -- -j$(nproc)
+
+# Add ROOT to environment
+ENV ROOTSYS=/opt/root
+ENV PATH=$ROOTSYS/bin:$PATH
+ENV LD_LIBRARY_PATH=$ROOTSYS/lib:$LD_LIBRARY_PATH
+ENV PYTHONPATH=$ROOTSYS/lib:$PYTHONPATH
+
+# Install MG5_aMC
+RUN cd /opt && \
+    wget https://launchpad.net/mg5amcnlo/3.0/${MG5_VERSION}.x/+download/MG5_aMC_v${MG5_VERSION}.tar.gz && \
     tar -xzf MG5_aMC_v${MG5_VERSION}.tar.gz && \
-    rm MG5_aMC_v${MG5_VERSION}.tar.gz
-
-# 3) Install Pythia8 & Delphes via MG5 installer
-WORKDIR /opt/MG5_aMC_v${MG5_VERSION//./_}
-RUN printf "install pythia8\ninstall Delphes\n" > install_script && \
-    ./bin/mg5_aMC install_script && \
-    rm install_script
-
-# 4) Smoke‑test MG5
-RUN ./bin/mg5_aMC --help | head -n 5
-
-# 5) Expose MG5 in PATH
-ENV PATH="/opt/MG5_aMC_v${MG5_VERSION//./_}/bin:$PATH"
-
-# 6) Register Jupyter kernel
-RUN python3 -m pip install ipykernel && \
-    python3 -m ipykernel install --name mg_env --display-name "MG5+Pythia+Delphes"
-
-# DO NOT EDIT USER VALUE
+    rm MG5_aMC_v${MG5_VERSION}.tar.gz && \
+    mv MG5_aMC_v${MG5_VERSION} MG5 && \
+    chown -R jovyan:jovyan /opt/MG5
 
 USER jovyan
+WORKDIR /opt/MG5
+
+# Install packages from MG5 prompt
+RUN echo "install lhapdf6" | ./bin/mg5_aMC && \
+    echo "install pythia8" | ./bin/mg5_aMC && \
+    echo "install Delphes" | ./bin/mg5_aMC && \
+    echo "install MadAnalysis5" | ./bin/mg5_aMC
+
+# Set working directory to writable location
+WORKDIR /home/jovyan
+
+# Default to bash
+CMD ["/bin/bash"]
