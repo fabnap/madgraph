@@ -16,7 +16,7 @@ RUN apt-get update && apt-get install -y \
 # 2) Download & unpack MG5_aMC LTS‑3.5.7
 WORKDIR /opt
 ENV MG5_VERSION=3.5.7
-RUN wget https://launchpad.net/mg5amcnlo/3.0/3.5.x/+download/MG5_aMC_v${MG5_VERSION}.tar.gz && \
+RUN wget https://launchpad.net/mg5amcnlo/lts/lts.3.5.x/+download/MG5_aMC_v${MG5_VERSION}.tar.gz && \
     tar -xzf MG5_aMC_v${MG5_VERSION}.tar.gz && \
     rm MG5_aMC_v${MG5_VERSION}.tar.gz
 
