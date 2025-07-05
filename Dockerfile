@@ -57,7 +57,7 @@ RUN cd /opt && \
     tar -xzf MG5_aMC_v${MG5_VERSION}.tar.gz && \
     rm MG5_aMC_v${MG5_VERSION}.tar.gz && \
     mv ${MG5_DIR_NAME} MG5 && \
-    chown -R jovyan:jovyan /opt/MG5
+    chown -R jovyan /opt/MG5
 
 # --- Switch to non-root user ---
 USER jovyan
