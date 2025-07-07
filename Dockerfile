@@ -25,6 +25,18 @@ RUN apt-get update && \
     ln -sf /usr/bin/python3.10 /usr/bin/python3 && \
     ln -sf /usr/bin/pip3 /usr/bin/pip
 
+# Install LaTeX packages needed by MadAnalysis5
+RUN apt-get update && \
+    apt-get install -y --no-install-recommends \
+        texlive-latex-base \
+        texlive-fonts-recommended \
+        texlive-fonts-extra \
+        texlive-latex-extra \
+        ghostscript \
+        dvipng && \
+    apt-get clean && \
+    rm -rf /var/lib/apt/lists/*
+
 # Install ROOT dependencies
 RUN apt-get update && \
     apt-get install -y --no-install-recommends dpkg-dev g++ gcc binutils libx11-dev libxpm-dev \
@@ -69,6 +81,7 @@ install lhapdf6
 install pythia8
 install Delphes
 install MadAnalysis5
+install lhapdf6
 EOF
 
 # Set final working directory and default command
